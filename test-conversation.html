@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Eco-skills · A Conversation With Yourself</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Outfit:wght@300;400;500;600&family=Noto+Serif+Devanagari:wght@500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --cream:#FAF4E9;--ink:#2A2014;--ink-soft:#6B5B4A;--ink-faint:#9A8770;
+  --moss:#5f7d4d;--moss-deep:#3a5a2a;--moss-light:#7d9a6a;
+  --gold:#b8943e;--gold-deep:#8B6914;--rust:#a8623e;--plum:#7a5a6a;
+  --line:rgba(95,125,77,.18);--glass:rgba(250,244,233,.62);--glass2:rgba(250,244,233,.4);
+  --radius:20px;--shadow:0 8px 40px rgba(42,32,20,.10),0 2px 8px rgba(42,32,20,.06);
+  --fd:'Cormorant Garamond',Georgia,serif;--fb:'Outfit',system-ui,sans-serif;
+  --fh:'Noto Serif Devanagari',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--fb);font-size:16px;line-height:1.6;color:var(--ink);
+  background:radial-gradient(1200px 700px at 80% -5%,rgba(184,148,62,.12),transparent 60%),
+    radial-gradient(900px 600px at 0% 100%,rgba(95,125,77,.10),transparent 55%),var(--cream);
+  min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:20px;-webkit-font-smoothing:antialiased}
+body.hi .fd,body.hi .qtext{font-family:var(--fh)}
+#app{max-width:640px;width:100%;margin:32px auto}
+.card{position:relative;background:var(--glass);backdrop-filter:blur(20px) saturate(1.1);
+  -webkit-backdrop-filter:blur(20px) saturate(1.1);border:1px solid rgba(255,255,255,.65);
+  border-radius:var(--radius);box-shadow:var(--shadow);padding:clamp(28px,5.5vw,48px);overflow:hidden}
+.card::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(160deg,rgba(255,255,255,.18),transparent 40%);border-radius:var(--radius)}
+.q-enter{animation:qIn .5s cubic-bezier(.22,1,.36,1)}
+@keyframes qIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.q-exit{animation:qOut .28s ease forwards}@keyframes qOut{to{opacity:0;transform:translateY(-12px)}}
+
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.logo{font-family:var(--fd);font-size:15px;color:var(--moss);font-weight:600;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+.lang{display:flex;gap:2px;background:var(--glass2);border-radius:99px;padding:3px;border:1px solid var(--line)}
+.lang button{border:none;background:transparent;font-family:var(--fb);font-size:12.5px;font-weight:600;
+  color:var(--ink-soft);padding:5px 12px;border-radius:99px;cursor:pointer;transition:all .2s}
+.lang button.on{background:var(--moss);color:#fff}
+
+.dots{display:flex;gap:5px;margin-bottom:22px;flex-wrap:wrap}
+.dot{width:7px;height:7px;border-radius:99px;background:rgba(95,125,77,.18);transition:all .4s}
+.dot.done{background:var(--moss)}.dot.now{background:var(--gold);transform:scale(1.5);box-shadow:0 0 0 3px rgba(184,148,62,.18)}
+
+.speaker{font-family:var(--fb);font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:12px;opacity:.85}
+.qtext{font-family:var(--fd);font-size:clamp(23px,4.8vw,31px);font-weight:600;line-height:1.32;color:var(--ink);margin-bottom:8px;letter-spacing:-.01em}
+.qsub{font-size:13.5px;color:var(--ink-soft);font-style:italic;margin-bottom:20px;line-height:1.5}
+.qgap{height:16px}
+
+.opts{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.opt{display:flex;align-items:center;gap:13px;padding:15px 18px;border-radius:13px;border:1.5px solid var(--line);
+  background:rgba(255,255,255,.45);cursor:pointer;transition:transform .16s,border-color .16s,background .16s;
+  font-size:15.5px;color:var(--ink);text-align:left;line-height:1.4}
+.opt:hover{border-color:var(--moss-light);background:rgba(95,125,77,.07);transform:translateX(4px)}
+.opt.sel{border-color:var(--moss);background:rgba(95,125,77,.12)}
+.optl{width:29px;height:29px;border-radius:8px;background:var(--glass2);border:1.5px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-weight:700;font-size:14px;
+  color:var(--moss);flex-shrink:0;transition:all .16s}
+.opt.sel .optl{background:var(--moss);color:#fff;border-color:var(--moss)}
+
+.cwrap{display:flex;align-items:center;gap:13px;padding:12px 18px;border-radius:13px;border:1.5px dashed var(--line);
+  background:rgba(255,255,255,.28);transition:all .16s}
+.cwrap.on{border-color:var(--moss);border-style:solid;background:rgba(95,125,77,.08)}
+.cin{flex:1;border:none;background:transparent;font-family:var(--fb);font-size:15.5px;color:var(--ink);outline:none;padding:4px 0}
+.cin::placeholder{color:var(--ink-faint)}
+.tin{width:100%;padding:14px 18px;border-radius:13px;border:1.5px solid var(--line);background:rgba(255,255,255,.5);
+  font-family:var(--fb);font-size:16px;color:var(--ink);outline:none;margin-bottom:14px;transition:border-color .16s}
+.tin:focus{border-color:var(--moss)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 30px;border-radius:999px;
+  font-family:var(--fb);font-size:14.5px;font-weight:600;border:none;cursor:pointer;transition:all .2s}
+.btn-p{background:var(--moss);color:#fff;box-shadow:0 4px 16px rgba(95,125,77,.25)}
+.btn-p:hover{background:var(--moss-deep);transform:translateY(-2px)}
+.btn-p:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-g{background:transparent;color:var(--moss);border:1.5px solid var(--moss)}
+.btn-g:hover{background:rgba(95,125,77,.08)}
+
+.intro{text-align:center}
+.seed{font-size:50px;margin-bottom:6px;display:inline-block;animation:sway 4s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+.intro h1{font-family:var(--fd);font-size:clamp(30px,6vw,42px);font-weight:700;color:var(--ink);margin-bottom:6px;line-height:1.08}
+.intro .tag{font-family:var(--fd);font-style:italic;font-size:18px;color:var(--moss-deep);margin-bottom:20px}
+.intro p{font-size:15px;color:var(--ink-soft);line-height:1.6;margin-bottom:20px;max-width:420px;margin-left:auto;margin-right:auto}
+.meta{font-size:12.5px;color:var(--ink-faint);margin-top:16px}
+body.hi .intro h1,body.hi .tag,body.hi .qtext,body.hi .arche,body.hi .it,body.hi .dn{font-family:var(--fh)}
+
+.think{text-align:center;padding:28px 0}
+.think .ring{width:50px;height:50px;border:3px solid rgba(95,125,77,.15);border-top-color:var(--moss);border-radius:50%;margin:0 auto 20px;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.think p{font-family:var(--fd);font-size:20px;font-style:italic;color:var(--moss-deep)}
+
+.an{animation:qIn .6s ease}
+.an .crown{font-size:11px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:10px}
+.an h2{font-family:var(--fd);font-size:clamp(26px,5.2vw,36px);font-weight:700;color:var(--ink);margin-bottom:4px;line-height:1.12}
+.an .arche{font-family:var(--fd);font-style:italic;font-size:20px;color:var(--moss-deep);margin-bottom:16px}
+.an .lead{font-size:15.5px;color:var(--ink-soft);line-height:1.6;margin-bottom:24px}
+.wound{background:linear-gradient(135deg,rgba(168,98,62,.12),rgba(184,148,62,.06));border:1px solid rgba(168,98,62,.22);
+  border-radius:16px;padding:22px 24px;margin:18px 0}
+.wound .wt{font-family:var(--fd);font-weight:700;font-size:21px;color:var(--rust);margin-bottom:10px}
+.wound p{font-size:14.5px;line-height:1.62;color:var(--ink-soft);margin-bottom:9px}.wound p:last-child{margin-bottom:0}
+.wound b{color:var(--ink);font-weight:600}
+.sect{font-size:11px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-faint);margin:26px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.card-i{background:linear-gradient(135deg,rgba(95,125,77,.1),rgba(184,148,62,.05));border:1px solid rgba(95,125,77,.2);border-radius:14px;padding:18px 20px;margin:14px 0}
+.card-i .it{font-family:var(--fd);font-weight:700;font-size:17px;color:var(--moss-deep);margin-bottom:7px}
+.card-i p{font-size:14px;line-height:1.6;color:var(--ink-soft)}.card-i b{color:var(--ink)}
+.rec{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}.rec:last-child{border:none}
+.rec .ri{font-size:19px;flex-shrink:0}.rec .rt{font-size:14px;color:var(--ink-soft);line-height:1.55}.rec .rt b{color:var(--moss-deep)}
+.cta{margin-top:30px;text-align:center;padding:24px;border-radius:14px;background:rgba(95,125,77,.08);border:1px solid var(--line)}
+.cta p{font-family:var(--fd);font-size:18px;font-style:italic;color:var(--moss-deep);margin-bottom:14px}
+body.hi .cta p{font-family:var(--fh)}
+
+@media(max-width:500px){body{padding:10px}#app{margin:12px auto}.card{padding:24px 20px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   BILINGUAL CONVERSATION ENGINE  (no API)
+   - questions are NODES in a tree
+   - each node's next is chosen by the answer -> feels continuous
+   - {name} {hobby} {course} placeholders speak the user's words back
+   - blocks of ~5 are internal only; user sees one smooth flow
+   ============================================================ */
+
+var L = "en"; // language
+
+// tiny translation helper: t({en:"",hi:""})
+function t(o){ return (typeof o==="string")?o:(o[L]||o.en); }
+
+var S = fresh();
+function fresh(){
+  return { screen:"intro", lang:"en",
+    name:"", age:"", gender:"", vars:{}, // vars holds hobby, course, job etc.
+    node:null, history:[], traits:traitInit(), wounds:{}, sel:null, custom:"", customOn:false, qcount:0 };
+}
+function traitInit(){ return {body:50,calm:50,aware:50,focus:50,social:50,nature:50,regulate:50,resilience:50}; }
+function clamp(v){return Math.max(0,Math.min(100,v));}
+function age(){return parseInt(S.age)||25;}
+function applyTr(tr){ if(!tr)return; for(var k in tr) S.traits[k]=clamp(S.traits[k]+tr[k]); }
+function wound(key,amt){ S.wounds[key]=(S.wounds[key]||0)+(amt||1); }
+
+// fill {name},{hobby} etc using saved vars
+function fill(str){
+  str = str.replace(/\{name\}/g, S.name||"friend");
+  for(var k in S.vars){ str = str.replace(new RegExp("\\{"+k+"\\}","g"), S.vars[k]); }
+  return str;
+}
+
+/* ============================================================
+   THE TREE
+   Each node:
+   { id, speaker?, q:{en,hi}, sub?:{en,hi},
+     opts:[ {t:{en,hi}, tr?:{}, w?:"woundKey", set?:{var:val|"@input"}, next:"nodeId"} ],
+     custom?: {placeholder:{en,hi}, set:"varName", next:"nodeId"}  // free text
+   }
+   next can be a string, or a function(S)->id for smart routing.
+   ============================================================ */
+var T = {};
+
+// ---------- OPENER: life situation (routes everything) ----------
+T.start = {
+  speaker:{en:"Nice to meet you",hi:"आपसे मिलकर अच्छा लगा"},
+  q:{en:"Hey {name} — good to meet you. What fills most of your days right now?",
+     hi:"नमस्ते {name} — आपसे मिलकर अच्छा लगा। इन दिनों आपका ज़्यादातर समय किसमें बीतता है?"},
+  opts:[
+    {t:{en:"I'm still studying — school or college",hi:"मैं अभी पढ़ाई कर रहा/रही हूँ — स्कूल या कॉलेज"}, next:"study_where"},
+    {t:{en:"I'm working a job",hi:"मैं नौकरी करता/करती हूँ"}, next:"job_feel"},
+    {t:{en:"I run my own work / business",hi:"मैं अपना काम / व्यवसाय करता/करती हूँ"}, next:"job_feel"},
+    {t:{en:"I'm not working right now",hi:"मैं अभी कोई काम नहीं कर रहा/रही"}, next:"idle_why"},
+  ],
+  custom:{placeholder:{en:"Something else — tell me…",hi:"कुछ और — बताइए…"}, set:"life", next:"idle_why"}
+};
+
+// ===== STUDENT THREAD =====
+T.study_where = {
+  q:{en:"Nice. School, or college?",hi:"अच्छा। स्कूल, या कॉलेज?"},
+  opts:[
+    {t:{en:"School",hi:"स्कूल"}, set:{place:"school"}, next:"study_course"},
+    {t:{en:"College / university",hi:"कॉलेज / विश्वविद्यालय"}, set:{place:"college"}, next:"study_course"},
+    {t:{en:"Coaching / preparing for something",hi:"कोचिंग / किसी परीक्षा की तैयारी"}, set:{place:"prep"}, next:"study_course"},
+  ]
+};
+T.study_course = {
+  q:{en:"And what are you studying?",hi:"और आप क्या पढ़ रहे/रही हैं?"},
+  sub:{en:"Type it however you'd say it.",hi:"जैसे आप कहते हैं वैसे ही लिखिए।"},
+  custom:{placeholder:{en:"e.g. BA LLB, 11th science, NEET prep…",hi:"जैसे BA LLB, 11वीं विज्ञान, NEET की तैयारी…"}, set:"course", next:"study_love"},
+  opts:[
+    {t:{en:"I haven't really chosen — it chose me",hi:"मैंने सच में नहीं चुना — यह मुझे मिल गया"}, set:{course:"your studies"}, w:"forced", tr:{aware:-3,focus:-3}, next:"study_love"},
+  ]
+};
+T.study_love = {
+  q:{en:"Be honest with me — when you sit down to study {course}, does it actually feel good?",
+     hi:"मुझसे सच कहिए — जब आप {course} पढ़ने बैठते/बैठती हैं, तो क्या वाकई अच्छा लगता है?"},
+  opts:[
+    {t:{en:"Yes — I genuinely enjoy it",hi:"हाँ — मुझे सचमुच अच्छा लगता है"}, tr:{focus:4,aware:3}, next:"hobby_ask"},
+    {t:{en:"It's okay, nothing special",hi:"ठीक है, कुछ खास नहीं"}, tr:{focus:-1,aware:-1}, next:"study_why_meh"},
+    {t:{en:"No — not really",hi:"नहीं — असल में नहीं"}, tr:{focus:-3,calm:-2}, next:"study_why_no"},
+    {t:{en:"I dread it",hi:"मुझे इससे घबराहट होती है"}, tr:{focus:-4,calm:-4,regulate:-2}, w:"trapped", next:"study_why_no"},
+  ]
+};
+T.study_why_no = {
+  q:{en:"Okay. So what's really going on — is it the place itself, or was your heart somewhere else all along?",
+     hi:"ठीक है। तो असल बात क्या है — क्या यह जगह ही है, या आपका मन हमेशा से कहीं और था?"},
+  sub:{en:"There are no wrong answers here.",hi:"यहाँ कोई गलत उत्तर नहीं है।"},
+  opts:[
+    {t:{en:"Honestly… my parents pushed me into this",hi:"सच कहूँ तो… मेरे माता-पिता ने मुझे इसमें धकेला"}, w:"forced", tr:{aware:-4,focus:-3,regulate:-2}, next:"forced_dream"},
+    {t:{en:"My interest was always in something else",hi:"मेरी रुचि हमेशा किसी और चीज़ में थी"}, w:"lost_self", tr:{aware:-2,focus:-3}, next:"forced_dream"},
+    {t:{en:"The pressure and competition crush me",hi:"दबाव और प्रतियोगिता मुझे कुचल देती है"}, w:"pressure", tr:{calm:-4,resilience:-3}, next:"pressure_who"},
+    {t:{en:"I just can't focus anymore",hi:"मैं अब ध्यान ही नहीं लगा पाता/पाती"}, w:"escape", tr:{focus:-4,calm:-3}, next:"escape_where"},
+  ]
+};
+T.study_why_meh = {
+  q:{en:"A lot of people live in that 'it's fine' zone. If money and marks didn't matter — would you still choose {course}?",
+     hi:"बहुत से लोग इसी 'ठीक है' वाली स्थिति में जीते हैं। अगर पैसा और अंक मायने न रखते — तो क्या आप फिर भी {course} चुनते/चुनतीं?"},
+  opts:[
+    {t:{en:"Yes, I think I would",hi:"हाँ, शायद मैं चुनता/चुनती"}, tr:{aware:3,focus:2}, next:"hobby_ask"},
+    {t:{en:"No… I'd do something completely different",hi:"नहीं… मैं कुछ बिल्कुल अलग करता/करती"}, w:"lost_self", tr:{aware:-3,focus:-3}, next:"forced_dream"},
+    {t:{en:"I genuinely don't know",hi:"मुझे सच में नहीं पता"}, w:"lost_self", tr:{aware:-4,focus:-2}, next:"forced_dream"},
+  ]
+};
+T.forced_dream = {
+  q:{en:"So let me ask the real question — if it were entirely your choice, what would you actually be doing?",
+     hi:"तो असली सवाल पूछता/पूछती हूँ — अगर पूरा फैसला आपका होता, तो आप असल में क्या कर रहे/रही होते?"},
+  sub:{en:"Even if it sounds impractical. Say it.",hi:"भले ही यह व्यावहारिक न लगे। कहिए।"},
+  custom:{placeholder:{en:"What you'd really choose…",hi:"जो आप सच में चुनते/चुनतीं…"}, set:"dream", next:"forced_gap"},
+  opts:[
+    {t:{en:"Honestly, I don't know anymore — that scares me",hi:"सच कहूँ तो अब नहीं पता — और यही मुझे डराता है"}, set:{dream:"something you can't name yet"}, w:"lost_self", tr:{aware:-4,resilience:-2}, next:"forced_gap"},
+  ]
+};
+T.forced_gap = {
+  q:{en:"There's a gap, then — between {dream} and the life you're actually living. How heavy does that gap feel?",
+     hi:"तो एक खाई है — {dream} और जो ज़िंदगी आप जी रहे/रही हैं, उसके बीच। यह खाई कितनी भारी लगती है?"},
+  opts:[
+    {t:{en:"Very heavy — I think about it all the time",hi:"बहुत भारी — मैं हर समय इसके बारे में सोचता/सोचती हूँ"}, w:"trapped", tr:{calm:-4,regulate:-3,aware:2}, next:"hobby_ask"},
+    {t:{en:"It's there, but I've learned to ignore it",hi:"है, पर मैंने इसे अनदेखा करना सीख लिया है"}, w:"lost_self", tr:{regulate:-2,aware:-2}, next:"hobby_ask"},
+    {t:{en:"I keep hoping it'll sort itself out",hi:"मैं उम्मीद करता/करती रहता हूँ कि सब अपने आप ठीक हो जाएगा"}, w:"lost_self", tr:{focus:-3}, next:"hobby_ask"},
+  ]
+};
+
+// ===== HOBBY THREAD (the fish-keeping branch) =====
+T.hobby_ask = {
+  q:{en:"Let's step away from all that. Outside of work and study — is there something that's just *yours*? A hobby, something you love?",
+     hi:"चलिए इन सब से थोड़ा हटते हैं। काम और पढ़ाई से अलग — क्या कुछ ऐसा है जो सिर्फ़ *आपका* है? कोई शौक, कुछ जो आपको पसंद है?"},
+  custom:{placeholder:{en:"e.g. fish keeping, sketching, cricket, cooking…",hi:"जैसे मछली पालना, चित्रकारी, क्रिकेट, खाना बनाना…"}, set:"hobby", next:"hobby_why"},
+  opts:[
+    {t:{en:"Honestly… I don't really have one anymore",hi:"सच कहूँ तो… अब कोई नहीं है"}, set:{hobby:"having a space of your own"}, w:"lost_self", tr:{nature:-3,aware:-3}, next:"hobby_none"},
+  ]
+};
+T.hobby_why = {
+  q:{en:"{hobby} — I like that. What is it you love about it? Is it that it quiets your mind… or is it more that it keeps you busy so you don't have to sit with your own thoughts?",
+     hi:"{hobby} — अच्छा लगा। इसमें आपको क्या पसंद है? क्या यह आपके मन को शांत करता है… या फिर यह आपको व्यस्त रखता है ताकि आपको अपने ही विचारों के साथ न बैठना पड़े?"},
+  sub:{en:"Be honest — both are okay.",hi:"सच कहिए — दोनों ठीक हैं।"},
+  opts:[
+    {t:{en:"It genuinely calms me — I feel present",hi:"यह सचमुच मुझे शांत करता है — मैं उपस्थित महसूस करता/करती हूँ"}, tr:{calm:4,nature:4,aware:2}, next:"hobby_calm"},
+    {t:{en:"Honestly… it keeps me distracted",hi:"सच कहूँ तो… यह मुझे ध्यान भटकाए रखता है"}, w:"escape", tr:{calm:-2,regulate:-2}, next:"escape_where"},
+    {t:{en:"A bit of both",hi:"थोड़ा दोनों"}, tr:{calm:1,nature:1}, next:"hobby_calm"},
+  ]
+};
+T.hobby_calm = {
+  q:{en:"That feeling — when {hobby} makes the noise in your head go quiet — how often do you actually get it in the rest of your life?",
+     hi:"वह एहसास — जब {hobby} आपके दिमाग़ का शोर शांत कर देता है — बाकी ज़िंदगी में आपको यह कितनी बार मिलता है?"},
+  opts:[
+    {t:{en:"Almost never — only there",hi:"लगभग कभी नहीं — सिर्फ़ वहीं"}, w:"unrest", tr:{calm:-4,regulate:-2}, next:"core_calm"},
+    {t:{en:"Sometimes, in small moments",hi:"कभी-कभी, छोटे पलों में"}, tr:{calm:1}, next:"core_calm"},
+    {t:{en:"Fairly often, actually",hi:"असल में अक्सर"}, tr:{calm:3,nature:2}, next:"core_calm"},
+  ]
+};
+T.hobby_none = {
+  q:{en:"That itself tells me something. When did you last do something purely because it made *you* happy — not useful, not productive, just happy?",
+     hi:"यह बात ही कुछ कहती है। आपने आख़िरी बार कब कुछ सिर्फ़ इसलिए किया क्योंकि उससे *आपको* खुशी मिली — उपयोगी नहीं, उत्पादक नहीं, बस खुशी?"},
+  opts:[
+    {t:{en:"I genuinely can't remember",hi:"मुझे सचमुच याद नहीं"}, w:"lost_self", tr:{nature:-4,aware:-3,calm:-2}, next:"core_lost"},
+    {t:{en:"A while ago — life got in the way",hi:"काफ़ी समय पहले — ज़िंदगी आड़े आ गई"}, w:"lost_self", tr:{nature:-2,aware:-2}, next:"core_lost"},
+    {t:{en:"Recently, actually",hi:"असल में हाल ही में"}, tr:{nature:2,aware:1}, next:"core_calm"},
+  ]
+};
+
+// ===== JOB THREAD =====
+T.job_feel = {
+  q:{en:"Got it. Does the work feel like *yours* — something you'd choose — or mostly a paycheck?",
+     hi:"समझ गया/गई। क्या यह काम *आपका* लगता है — कुछ जो आप चुनते — या ज़्यादातर बस तनख्वाह के लिए?"},
+  opts:[
+    {t:{en:"It's mine — I believe in it",hi:"यह मेरा है — मुझे इसमें विश्वास है"}, tr:{focus:4,aware:3,resilience:2}, next:"job_balance"},
+    {t:{en:"Mostly just a paycheck",hi:"ज़्यादातर बस तनख्वाह"}, w:"lost_self", tr:{aware:-3,focus:-3}, next:"job_trapped"},
+    {t:{en:"I'm honestly burning out",hi:"मैं सच में थक कर चूर हो रहा/रही हूँ"}, w:"burnout", tr:{calm:-4,body:-3,resilience:-3}, next:"job_trapped"},
+  ]
+};
+T.job_trapped = {
+  q:{en:"If you could walk away tomorrow with no consequences — would you?",
+     hi:"अगर आप कल बिना किसी परिणाम के यह छोड़ सकते — तो क्या छोड़ देते?"},
+  opts:[
+    {t:{en:"In a heartbeat",hi:"एक पल में"}, w:"trapped", tr:{focus:-3,regulate:-2}, next:"job_why_stay"},
+    {t:{en:"I'd change a lot, but not leave",hi:"बहुत कुछ बदलता, पर छोड़ता नहीं"}, tr:{resilience:2}, next:"job_balance"},
+    {t:{en:"No — I'd stay",hi:"नहीं — मैं रुकता/रुकती"}, tr:{aware:2,focus:2}, next:"job_balance"},
+  ]
+};
+T.job_why_stay = {
+  q:{en:"So what keeps you there?",hi:"तो आपको वहाँ क्या रोके रखता है?"},
+  opts:[
+    {t:{en:"Money — I can't afford to leave",hi:"पैसा — मैं छोड़ने का जोखिम नहीं ले सकता/सकती"}, w:"trapped", tr:{calm:-3,regulate:-2}, next:"job_balance"},
+    {t:{en:"Fear — what if I fail at something new?",hi:"डर — अगर मैं किसी नई चीज़ में असफल हो गया/गई तो?"}, w:"not_enough", tr:{resilience:-3,aware:-2}, next:"core_notenough"},
+    {t:{en:"Other people depend on me",hi:"दूसरे लोग मुझ पर निर्भर हैं"}, w:"burnout", tr:{social:2,regulate:-2}, next:"job_balance"},
+  ]
+};
+T.job_balance = {
+  q:{en:"When the workday ends — does it actually end, or does it follow you home, into your head, into your sleep?",
+     hi:"जब काम का दिन ख़त्म होता है — क्या वह सच में ख़त्म होता है, या आपके घर तक, दिमाग़ तक, नींद तक पीछा करता है?"},
+  opts:[
+    {t:{en:"It follows me everywhere",hi:"यह हर जगह मेरा पीछा करता है"}, w:"unrest", tr:{calm:-4,body:-2,regulate:-3}, next:"core_calm"},
+    {t:{en:"Sometimes I can't switch off",hi:"कभी-कभी मैं बंद नहीं कर पाता/पाती"}, tr:{calm:-2}, next:"rel_status"},
+    {t:{en:"I can leave it behind",hi:"मैं इसे पीछे छोड़ सकता/सकती हूँ"}, tr:{calm:3,resilience:2}, next:"rel_status"},
+  ]
+};
+
+// ===== IDLE THREAD =====
+T.idle_why = {
+  q:{en:"That's okay — life has seasons. Does this feel like a pause you chose, or one that happened to you?",
+     hi:"कोई बात नहीं — ज़िंदगी के अपने मौसम होते हैं। क्या यह ठहराव आपका चुना हुआ है, या आप पर आ पड़ा?"},
+  opts:[
+    {t:{en:"It happened to me — and I feel stuck",hi:"मुझ पर आ पड़ा — और मैं फँसा/फँसी महसूस करता/करती हूँ"}, w:"trapped", tr:{focus:-4,resilience:-3,regulate:-2}, next:"core_trapped"},
+    {t:{en:"I chose it, but I feel a bit lost in it",hi:"मैंने चुना, पर इसमें थोड़ा खोया/खोई महसूस करता/करती हूँ"}, w:"lost_self", tr:{aware:-3,focus:-2}, next:"core_lost"},
+    {t:{en:"I chose it and I'm okay",hi:"मैंने चुना और मैं ठीक हूँ"}, tr:{resilience:3,calm:2}, next:"rel_status"},
+  ]
+};
+
+// ===== RELATIONSHIP / CONNECTION (age-aware) =====
+T.rel_status = {
+  q:{en:"Let's talk about the people side. Right now, are you—",
+     hi:"चलिए लोगों वाली बात करते हैं। अभी आप—"},
+  opts:[
+    {t:{en:"Single",hi:"अकेले / सिंगल"}, set:{rel:"single"}, next:"rel_single_feel"},
+    {t:{en:"In a relationship",hi:"किसी रिश्ते में"}, set:{rel:"relationship"}, next:"rel_together_feel"},
+    {t:{en:"Married",hi:"विवाहित"}, set:{rel:"married"}, next:"rel_together_feel"},
+    {t:{en:"It's complicated",hi:"यह उलझा हुआ है"}, set:{rel:"complicated"}, w:"lonely", tr:{regulate:-2}, next:"rel_single_feel"},
+  ]
+};
+T.rel_single_feel = {
+  q:{en:"And how do you really feel about that — content, or does it sit heavy some nights?",
+     hi:"और इसके बारे में आप सच में कैसा महसूस करते/करती हैं — संतुष्ट, या कुछ रातों को यह भारी लगता है?"},
+  opts:[
+    {t:{en:"Content — I'm at peace with it",hi:"संतुष्ट — मैं इससे शांत हूँ"}, tr:{aware:3,calm:2}, next:"connection_known"},
+    {t:{en:"It weighs on me more than I admit",hi:"यह जितना मैं मानता/मानती हूँ उससे ज़्यादा भारी है"}, w:"lonely", tr:{social:-4,regulate:-3}, next:"rel_single_why"},
+    {t:{en:"It's the pressure from others that gets me",hi:"दूसरों का दबाव मुझे परेशान करता है"}, w:"pressure", tr:{calm:-3,regulate:-2}, next:"connection_known"},
+  ]
+};
+T.rel_single_why = {
+  q:{en:"When it weighs on you — is it the wanting someone there, or something quieter… like wondering if anyone truly *knows* you?",
+     hi:"जब यह भारी लगता है — क्या यह किसी के साथ होने की चाह है, या कुछ और शांत… जैसे यह सोचना कि क्या कोई आपको सच में *जानता* है?"},
+  opts:[
+    {t:{en:"Wanting someone there",hi:"किसी के साथ होने की चाह"}, w:"lonely", tr:{social:-3}, next:"connection_known"},
+    {t:{en:"That nobody truly knows me",hi:"कि कोई मुझे सच में नहीं जानता"}, w:"mask", tr:{social:-4,aware:-3,regulate:-3}, next:"core_mask"},
+    {t:{en:"Both, honestly",hi:"सच कहूँ तो दोनों"}, w:"lonely", tr:{social:-4,regulate:-2}, next:"core_mask"},
+  ]
+};
+T.rel_together_feel = {
+  q:{en:"And inside that — do you feel truly seen and heard, or more like you're performing a role?",
+     hi:"और उसके भीतर — क्या आप सच में देखे-सुने जाते हैं, या ऐसा लगता है कि आप एक भूमिका निभा रहे हैं?"},
+  opts:[
+    {t:{en:"Truly seen — it's a safe place",hi:"सच में देखा जाता हूँ — यह एक सुरक्षित जगह है"}, tr:{social:4,regulate:3}, next:"connection_known"},
+    {t:{en:"Like I'm performing, often",hi:"अक्सर ऐसा कि मैं भूमिका निभा रहा/रही हूँ"}, w:"mask", tr:{social:-3,regulate:-3,aware:-2}, next:"core_mask"},
+    {t:{en:"We've drifted — there's distance",hi:"हम दूर हो गए हैं — एक फ़ासला है"}, w:"lonely", tr:{social:-4,regulate:-2}, next:"connection_known"},
+  ]
+};
+T.connection_known = {
+  q:{en:"One honest question about all your relationships: is there anyone who knows the *real* you — the parts you don't show?",
+     hi:"आपके सभी रिश्तों के बारे में एक सच्चा सवाल: क्या कोई है जो *असली* आपको जानता है — वे हिस्से जो आप नहीं दिखाते?"},
+  opts:[
+    {t:{en:"Yes — at least one person",hi:"हाँ — कम से कम एक व्यक्ति"}, tr:{social:4,regulate:3,aware:2}, next:"inner_voice"},
+    {t:{en:"Not really — I keep parts hidden",hi:"असल में नहीं — मैं कुछ हिस्से छिपाए रखता/रखती हूँ"}, w:"mask", tr:{social:-4,aware:-3,regulate:-3}, next:"core_mask"},
+    {t:{en:"No. Not even close",hi:"नहीं। बिल्कुल नहीं"}, w:"mask", tr:{social:-5,aware:-4,regulate:-4}, next:"core_mask"},
+  ]
+};
+
+// ===== INNER VOICE / SELF-WORTH =====
+T.inner_voice = {
+  q:{en:"Now turn inward. The voice in your head when you make a mistake — is it kind, or is it cruel?",
+     hi:"अब भीतर देखिए। जब आप गलती करते हैं तो आपके दिमाग़ की आवाज़ — दयालु है, या निर्दयी?"},
+  opts:[
+    {t:{en:"Mostly kind — I forgive myself",hi:"ज़्यादातर दयालु — मैं खुद को माफ़ कर देता/देती हूँ"}, tr:{regulate:4,aware:3,resilience:2}, next:"escape_check"},
+    {t:{en:"Harsh — I replay it for hours",hi:"कठोर — मैं घंटों इसे दोहराता/दोहराती रहता हूँ"}, w:"critic", tr:{regulate:-4,calm:-3,resilience:-2}, next:"critic_friend"},
+    {t:{en:"Genuinely cruel — I tear myself apart",hi:"सचमुच निर्दयी — मैं खुद को चीर देता/देती हूँ"}, w:"critic", tr:{regulate:-5,calm:-4,resilience:-3}, next:"critic_friend"},
+  ]
+};
+T.critic_friend = {
+  q:{en:"Would you ever speak to someone you love the way that voice speaks to you?",
+     hi:"क्या आप कभी किसी प्रियजन से वैसे बात करेंगे जैसे वह आवाज़ आपसे करती है?"},
+  sub:{en:"Sit with that for a second.",hi:"एक पल इस पर ठहरिए।"},
+  opts:[
+    {t:{en:"Never. I'd never be that harsh to them",hi:"कभी नहीं। मैं उनसे इतनी कठोरता कभी नहीं करता/करती"}, w:"critic", tr:{aware:2,regulate:-2}, next:"core_critic"},
+    {t:{en:"...I've never thought about it that way",hi:"...मैंने इसे इस तरह कभी नहीं सोचा"}, w:"critic", tr:{aware:-2}, next:"core_critic"},
+  ]
+};
+
+// ===== ESCAPE / NUMBING =====
+T.escape_check = {
+  q:{en:"Last thing in this part — when everything gets too much, where do you go to escape?",
+     hi:"इस हिस्से की आख़िरी बात — जब सब कुछ हद से ज़्यादा हो जाता है, तो आप बचने के लिए कहाँ जाते हैं?"},
+  opts:[
+    {t:{en:"My phone, scrolling, games, shows",hi:"मेरा फ़ोन, स्क्रॉलिंग, गेम, शोज़"}, set:{escape:"the screen"}, w:"escape", tr:{focus:-3,nature:-3}, next:"escape_after"},
+    {t:{en:"Food, or something I consume",hi:"खाना, या कुछ जो मैं लेता/लेती हूँ"}, set:{escape:"that"}, w:"escape", tr:{body:-3,regulate:-2}, next:"escape_after"},
+    {t:{en:"Sleep — I shut down",hi:"नींद — मैं बंद हो जाता/जाती हूँ"}, set:{escape:"sleep"}, w:"escape", tr:{calm:-2,resilience:-2}, next:"escape_after"},
+    {t:{en:"I don't escape — I sit with it",hi:"मैं भागता/भागती नहीं — मैं इसके साथ बैठता/बैठती हूँ"}, tr:{regulate:4,aware:3,resilience:2}, next:"closing"},
+  ]
+};
+T.escape_where = {
+  q:{en:"When you need to disappear for a while — where do you go?",
+     hi:"जब आपको कुछ देर के लिए ग़ायब होना होता है — आप कहाँ जाते हैं?"},
+  opts:[
+    {t:{en:"Phone / screens",hi:"फ़ोन / स्क्रीन"}, set:{escape:"the screen"}, w:"escape", tr:{focus:-3,nature:-3}, next:"escape_after"},
+    {t:{en:"Sleep or shutting down",hi:"नींद या बंद हो जाना"}, set:{escape:"sleep"}, w:"escape", tr:{calm:-2,resilience:-2}, next:"escape_after"},
+    {t:{en:"Something I consume",hi:"कुछ जो मैं लेता/लेती हूँ"}, set:{escape:"that"}, w:"escape", tr:{body:-3}, next:"escape_after"},
+  ]
+};
+T.escape_after = {
+  q:{en:"And after a few hours in {escape} — do you come back feeling better… or emptier?",
+     hi:"और {escape} में कुछ घंटे बिताने के बाद — आप बेहतर लौटते हैं… या और ख़ाली?"},
+  opts:[
+    {t:{en:"Emptier. Almost always emptier",hi:"और ख़ाली। लगभग हमेशा और ख़ाली"}, w:"escape", tr:{regulate:-3,calm:-3,resilience:-2}, next:"escape_avoid"},
+    {t:{en:"A bit better, then back to the same",hi:"थोड़ा बेहतर, फिर वही"}, tr:{calm:-1}, next:"escape_avoid"},
+    {t:{en:"Genuinely recharged",hi:"सचमुच तरोताज़ा"}, tr:{resilience:2,calm:1}, next:"closing"},
+  ]
+};
+T.escape_avoid = {
+  q:{en:"Here's the gentle one: while you're there in {escape} — what is it you're really avoiding facing?",
+     hi:"अब एक नरम सवाल: जब आप {escape} में होते हैं — असल में आप किस चीज़ का सामना करने से बच रहे होते हैं?"},
+  sub:{en:"You don't have to name it perfectly.",hi:"इसे पूरी तरह नाम देना ज़रूरी नहीं।"},
+  custom:{placeholder:{en:"The thing underneath…",hi:"नीचे छिपी वह बात…"}, set:"avoiding", next:"core_escape"},
+  opts:[
+    {t:{en:"Honestly… I don't even know anymore",hi:"सच कहूँ तो… अब मुझे पता भी नहीं"}, set:{avoiding:"something you haven't let yourself look at"}, w:"escape", tr:{aware:-3}, next:"core_escape"},
+  ]
+};
+
+// ===== CORE NODES (confirm the wound, then -> closing) =====
+T.core_calm = { q:{en:"It sounds like calm is something you only borrow — never own. Does that ring true?",hi:"ऐसा लगता है कि शांति आपके लिए उधार की चीज़ है — कभी अपनी नहीं। क्या यह सही लगता है?"},
+  opts:[{t:{en:"Yes… that's exactly it",hi:"हाँ… बिल्कुल यही है"},w:"unrest",tr:{calm:-2},next:"closing"},{t:{en:"More than I'd like to admit",hi:"जितना मैं मानना चाहूँ उससे ज़्यादा"},w:"unrest",next:"closing"},{t:{en:"Not entirely",hi:"पूरी तरह नहीं"},tr:{calm:2},next:"closing"}] };
+T.core_lost = { q:{en:"It sounds like somewhere along the way, you lost track of who *you* are — under everyone's expectations. True?",hi:"ऐसा लगता है कि कहीं रास्ते में, आप यह भूल गए कि *आप* कौन हैं — सबकी अपेक्षाओं के नीचे। सही?"},
+  opts:[{t:{en:"Painfully true",hi:"दुखद रूप से सच"},w:"lost_self",tr:{aware:-2},next:"closing"},{t:{en:"Maybe a little",hi:"शायद थोड़ा"},next:"closing"},{t:{en:"No, I know who I am",hi:"नहीं, मैं जानता/जानती हूँ कि मैं कौन हूँ"},tr:{aware:3},next:"closing"}] };
+T.core_mask = { q:{en:"So you're known by many, but truly seen by no one — wearing a face that fits each room. That's a quiet kind of lonely. Yes?",hi:"तो आपको बहुत लोग जानते हैं, पर सच में कोई नहीं देखता — हर जगह एक अलग चेहरा पहनकर। यह एक शांत अकेलापन है। सही?"},
+  opts:[{t:{en:"Yes. Exactly that",hi:"हाँ। बिल्कुल यही"},w:"mask",tr:{social:-2},next:"closing"},{t:{en:"I've never said it out loud, but yes",hi:"मैंने इसे कभी नहीं कहा, पर हाँ"},w:"mask",next:"closing"},{t:{en:"Not really",hi:"असल में नहीं"},tr:{social:3},next:"closing"}] };
+T.core_critic = { q:{en:"Then the hardest person you live with is yourself — that cruel inner voice. Does it feel like it's been there a long time?",hi:"तो जिस सबसे कठोर व्यक्ति के साथ आप रहते हैं वह आप स्वयं हैं — वह निर्दयी भीतरी आवाज़। क्या यह लंबे समय से है?"},
+  opts:[{t:{en:"As long as I can remember",hi:"जब से मुझे याद है"},w:"critic",tr:{regulate:-2},next:"closing"},{t:{en:"It comes and goes",hi:"यह आती-जाती रहती है"},next:"closing"},{t:{en:"Only lately",hi:"बस हाल ही में"},next:"closing"}] };
+T.core_escape = { q:{en:"So the {escape} was never the problem — it was the bridge away from {avoiding}. Naming that is the first brave thing. Ready to look at it?",hi:"तो {escape} कभी समस्या थी ही नहीं — वह तो {avoiding} से दूर जाने का पुल था। इसे नाम देना ही पहला साहस है। इसे देखने को तैयार हैं?"},
+  opts:[{t:{en:"Yes. I think I am",hi:"हाँ। शायद मैं हूँ"},tr:{aware:3,resilience:2},next:"closing"},{t:{en:"Scared, but yes",hi:"डरा हुआ, पर हाँ"},w:"escape",tr:{aware:2},next:"closing"},{t:{en:"Not yet",hi:"अभी नहीं"},next:"closing"}] };
+T.core_trapped = { q:{en:"It sounds like the deepest feeling right now is being stuck — like the doors are closed. Is that the truest word: trapped?",hi:"ऐसा लगता है कि इस समय सबसे गहरा एहसास फँसे होने का है — जैसे दरवाज़े बंद हों। क्या यही सबसे सच्चा शब्द है: फँसा हुआ?"},
+  opts:[{t:{en:"Yes — trapped is the word",hi:"हाँ — फँसा हुआ ही शब्द है"},w:"trapped",tr:{regulate:-2},next:"closing"},{t:{en:"Stuck, but not hopeless",hi:"अटका हुआ, पर निराश नहीं"},tr:{resilience:2},next:"closing"},{t:{en:"No, just paused",hi:"नहीं, बस ठहरा हुआ"},tr:{calm:2},next:"closing"}] };
+T.core_notenough = { q:{en:"Underneath the fear of failing is often a quieter belief — that you might not be *enough*. Does that land?",hi:"असफलता के डर के नीचे अक्सर एक शांत विश्वास होता है — कि शायद आप *पर्याप्त* नहीं हैं। क्या यह सही बैठता है?"},
+  opts:[{t:{en:"It lands hard",hi:"यह गहराई से बैठता है"},w:"not_enough",tr:{resilience:-2,aware:2},next:"closing"},{t:{en:"Sometimes",hi:"कभी-कभी"},next:"closing"},{t:{en:"No, I know my worth",hi:"नहीं, मैं अपनी कीमत जानता/जानती हूँ"},tr:{resilience:3},next:"closing"}] };
+
+T.pressure_who = { q:{en:"Whose voice is loudest in that pressure — your own, or someone else's living in your head?",hi:"उस दबाव में सबसे ऊँची आवाज़ किसकी है — आपकी अपनी, या किसी और की जो आपके दिमाग़ में बसी है?"},
+  opts:[{t:{en:"Someone else's — family, society",hi:"किसी और की — परिवार, समाज"},w:"pressure",tr:{aware:-3,regulate:-2},next:"connection_known"},{t:{en:"My own impossible standards",hi:"मेरे अपने असंभव मानक"},w:"critic",tr:{regulate:-3},next:"inner_voice"},{t:{en:"Honestly, I can't tell anymore",hi:"सच कहूँ तो अब मैं फ़र्क नहीं कर पाता/पाती"},w:"lost_self",tr:{aware:-3},next:"connection_known"}] };
+
+// closing reflective question -> analysis
+T.closing = {
+  q:{en:"Thank you for being honest with me, {name}. One last word — beneath everything you've told me, how are you *really* doing?",
+     hi:"मुझसे सच कहने के लिए धन्यवाद, {name}। एक आख़िरी शब्द — आपने जो कुछ बताया उसके नीचे, आप *सच में* कैसे हैं?"},
+  opts:[
+    {t:{en:"Tired. Just tired",hi:"थका हुआ। बस थका हुआ"}, tr:{body:-3,calm:-3,resilience:-3}, next:"__end"},
+    {t:{en:"Still searching",hi:"अब भी खोज रहा/रही हूँ"}, tr:{aware:1,focus:-2}, next:"__end"},
+    {t:{en:"Heavier than I let people see",hi:"जितना मैं लोगों को दिखाता/दिखाती हूँ उससे भारी"}, w:"mask", tr:{regulate:-2}, next:"__end"},
+    {t:{en:"Quietly hopeful, actually",hi:"असल में, चुपचाप उम्मीद से भरा/भरी"}, tr:{resilience:3,calm:2}, next:"__end"},
+  ]
+};
+
+/* ============================================================
+   WOUND DEFINITIONS (the real-problem reveal)
+   ============================================================ */
+var WOUNDS = {
+  forced:    {title:{en:"You're living a life someone else chose.",hi:"आप वह ज़िंदगी जी रहे हैं जो किसी और ने चुनी।"},
+    body:{en:"Behind the studies and the schedule, your answers kept circling one thing: this path wasn't fully yours. You're carrying the weight of someone else's expectations as if it were your own destiny — and a quiet part of you knows it.",hi:"पढ़ाई और दिनचर्या के पीछे, आपके उत्तर बार-बार एक बात पर लौटते रहे: यह रास्ता पूरी तरह आपका नहीं था। आप किसी और की अपेक्षाओं का बोझ अपनी नियति समझकर ढो रहे हैं — और आपका एक शांत हिस्सा यह जानता है।"},
+    eco:"aware"},
+  lost_self: {title:{en:"Somewhere along the way, you lost yourself.",hi:"कहीं रास्ते में, आप खुद को खो बैठे।"},
+    body:{en:"Under everyone's needs and expectations, the thread back to <b>who you actually are</b> went quiet. You're functioning — but a little disconnected from your own wants, your own joy, your own direction.",hi:"सबकी ज़रूरतों और अपेक्षाओं के नीचे, <b>आप असल में कौन हैं</b> इसका सूत्र शांत पड़ गया। आप चल रहे हैं — पर अपनी चाहतों, अपनी खुशी, अपनी दिशा से थोड़ा कटे हुए।"},
+    eco:"aware"},
+  mask:      {title:{en:"You're lonely behind a mask.",hi:"आप एक मुखौटे के पीछे अकेले हैं।"},
+    body:{en:"You may be surrounded by people, even loved — but your answers revealed a self that almost no one truly sees. Performing a version of yourself all day is exhausting, and it leaves a specific kind of loneliness: being known by many, seen by none.",hi:"शायद आप लोगों से घिरे हों, प्रेम भी पाते हों — पर आपके उत्तरों ने एक ऐसा स्वरूप दिखाया जिसे लगभग कोई सच में नहीं देखता। दिन भर अपना एक संस्करण निभाना थका देता है, और यह एक ख़ास अकेलापन छोड़ता है: बहुतों का जाना हुआ, किसी का देखा हुआ नहीं।"},
+    eco:"social"},
+  critic:    {title:{en:"Your harshest critic lives inside you.",hi:"आपका सबसे कठोर आलोचक आपके भीतर रहता है।"},
+    body:{en:"The cruelest voice in your life isn't anyone out there — it's the one in your own head. You'd never speak to someone you love the way you speak to yourself. That inner voice feels like truth, but it isn't; it's a habit, and habits can change.",hi:"आपकी ज़िंदगी की सबसे निर्दयी आवाज़ बाहर किसी की नहीं — वह आपके अपने दिमाग़ की है। आप किसी प्रियजन से वैसे कभी बात नहीं करेंगे जैसे आप खुद से करते हैं। वह भीतरी आवाज़ सच जैसी लगती है, पर है नहीं; यह एक आदत है, और आदतें बदल सकती हैं।"},
+    eco:"regulate"},
+  escape:    {title:{en:"You're numbing something you haven't named.",hi:"आप किसी अनकही चीज़ को सुन्न कर रहे हैं।"},
+    body:{en:"The scrolling, the shutting down, the disappearing — none of it is the real problem. It's a bridge away from something underneath that you haven't let yourself face. The numbing leaves you emptier because it never touches the actual thing.",hi:"स्क्रॉलिंग, बंद हो जाना, ग़ायब हो जाना — इनमें से कुछ भी असली समस्या नहीं। यह नीचे छिपी किसी चीज़ से दूर जाने का पुल है जिसका सामना आपने खुद को करने नहीं दिया। यही सुन्नता आपको और ख़ाली छोड़ती है क्योंकि यह असली चीज़ को छूती ही नहीं।"},
+    eco:"regulate"},
+  lonely:    {title:{en:"You're carrying a quiet loneliness.",hi:"आप एक शांत अकेलापन ढो रहे हैं।"},
+    body:{en:"Whatever your situation looks like from outside, your answers pointed to a real ache for genuine connection — to be reached, not just surrounded. That longing isn't weakness; it's one of the most human things there is.",hi:"बाहर से आपकी स्थिति जैसी भी दिखे, आपके उत्तर सच्चे जुड़ाव की एक असली टीस की ओर इशारा करते हैं — पहुँचे जाने की, सिर्फ़ घिरे रहने की नहीं। यह चाह कमज़ोरी नहीं; यह सबसे मानवीय बातों में से एक है।"},
+    eco:"social"},
+  trapped:   {title:{en:"You feel trapped, with the doors closed.",hi:"आप फँसा हुआ महसूस करते हैं, दरवाज़े बंद।"},
+    body:{en:"The strongest current under your answers was a sense of being stuck — in a path, a job, a situation you can't see the exit from. That feeling is real, but 'trapped' is usually a story about <b>options you can't see yet</b>, not a fact about the world.",hi:"आपके उत्तरों के नीचे सबसे तेज़ धारा फँसे होने का एहसास थी — किसी रास्ते, नौकरी, स्थिति में जिसका निकास नहीं दिखता। यह एहसास सच्चा है, पर 'फँसा हुआ' अक्सर <b>उन विकल्पों की कहानी होती है जो अभी दिखते नहीं</b>, दुनिया का तथ्य नहीं।"},
+    eco:"focus"},
+  not_enough:{title:{en:"You're haunted by 'not enough'.",hi:"आप 'पर्याप्त नहीं' से परेशान हैं।"},
+    body:{en:"Beneath the surface runs a belief that you might not measure up — that you have to keep proving your worth. It quietly shapes your choices, your fear of failing, your hesitation. But worth isn't earned by performance; that belief is the wound, not the truth.",hi:"सतह के नीचे यह विश्वास बहता है कि शायद आप कमतर हैं — कि आपको अपनी कीमत साबित करते रहना है। यह चुपचाप आपके फ़ैसलों, असफलता के डर, झिझक को आकार देता है। पर कीमत प्रदर्शन से नहीं कमाई जाती; यही विश्वास घाव है, सच नहीं।"},
+    eco:"resilience"},
+  burnout:   {title:{en:"You're running on empty.",hi:"आप ख़ाली टंकी पर चल रहे हैं।"},
+    body:{en:"You've been giving and pushing and carrying for so long that the tank is dry — and you keep going anyway. Burnout isn't weakness; it's the bill for sustained over-giving without refuelling. Your body and mind are asking for rest you keep refusing them.",hi:"आप इतने लंबे समय से देते, धकेलते, ढोते आए हैं कि टंकी सूख गई है — और फिर भी चलते जा रहे हैं। थकावट कमज़ोरी नहीं; यह बिना ईंधन भरे लगातार ज़्यादा देने का बिल है। आपका शरीर और मन उस आराम की माँग कर रहे हैं जो आप उन्हें देने से इनकार करते रहते हैं।"},
+    eco:"body"},
+  unrest:    {title:{en:"You can't find stillness.",hi:"आपको ठहराव नहीं मिलता।"},
+    body:{en:"Calm, for you, is something borrowed in rare moments — never owned. Your mind rarely lets you rest, following you into your evenings and your sleep. Stillness isn't a personality you lack; it's a skill, and it can be built.",hi:"शांति, आपके लिए, दुर्लभ पलों में उधार ली गई चीज़ है — कभी अपनी नहीं। आपका मन शायद ही आपको विश्राम देता है, शाम और नींद तक आपका पीछा करता है। ठहराव कोई गुण नहीं जो आपमें नहीं; यह एक कौशल है, और इसे बनाया जा सकता है।"},
+    eco:"calm"},
+  pressure:  {title:{en:"You're buckling under others' expectations.",hi:"आप दूसरों की अपेक्षाओं के नीचे झुक रहे हैं।"},
+    body:{en:"A loud chorus of what you 'should' be — from family, society, comparison — is drowning out your own voice. You're measuring your life against a ruler someone else handed you. The first freedom is noticing whose voice you're actually obeying.",hi:"आपको क्या 'होना चाहिए' — परिवार, समाज, तुलना से — का एक ऊँचा शोर आपकी अपनी आवाज़ को दबा रहा है। आप अपनी ज़िंदगी को किसी और के दिए पैमाने से नाप रहे हैं। पहली आज़ादी यह देखना है कि आप असल में किसकी आवाज़ का पालन कर रहे हैं।"},
+    eco:"aware"},
+};
+
+// ===== ECO-SKILLS MAPPING FOR EACH WOUND =====
+var ECO = {
+  aware:{en:"The <b>Self-Awareness module</b> — uncovering your real interests, your unique skill, and a written Ultimate Goal — is built for exactly this. It helps you find the thread back to yourself.",hi:"<b>आत्म-जागरूकता मॉड्यूल</b> — आपकी असली रुचियाँ, आपका अद्वितीय कौशल, और एक लिखित परम लक्ष्य खोजना — ठीक इसी के लिए बना है। यह आपको खुद तक लौटने का सूत्र देता है।"},
+  social:{en:"The <b>Holistic Personality work</b> builds genuine communication, warmth and the courage to be seen — slowly turning 'known by many' into 'truly known by some'.",hi:"<b>समग्र व्यक्तित्व विकास</b> सच्चा संवाद, गर्मजोशी और देखे जाने का साहस बनाता है — धीरे-धीरे 'बहुतों का जाना हुआ' को 'कुछ का सच में जाना हुआ' में बदलता है।"},
+  regulate:{en:"The <b>Thought input and the Confess & Eco-Mirror therapies</b> work directly on the inner voice — softening the cruelty, and giving you a way to face what you've been numbing.",hi:"<b>विचार-इनपुट और कन्फ़ेस व ईको-मिरर चिकित्सा</b> सीधे भीतरी आवाज़ पर काम करती है — निर्दयता को नरम करती है, और आपको उस चीज़ का सामना करने का रास्ता देती है जिसे आप सुन्न करते आए हैं।"},
+  focus:{en:"<b>Eco-Centralization</b> rebuilds focus and direction — and the act of naming one small next step is often what turns 'trapped' back into 'moving'.",hi:"<b>ईको-केन्द्रीकरण</b> ध्यान और दिशा को फिर से बनाता है — और एक छोटा अगला कदम नाम देना ही अक्सर 'फँसे' को 'गतिमान' में बदल देता है।"},
+  resilience:{en:"The <b>five daily inputs</b> together rebuild the inner foundation — slowly replacing 'not enough' with a steadiness that doesn't depend on proving anything.",hi:"<b>पाँच दैनिक इनपुट</b> मिलकर भीतरी नींव को फिर से बनाते हैं — धीरे-धीरे 'पर्याप्त नहीं' को एक ऐसी स्थिरता से बदलते हैं जो कुछ साबित करने पर निर्भर नहीं।"},
+  body:{en:"The <b>physical inputs — breath, light, water, nutrition</b> — and the stress therapies are the fastest way back from empty. They give your body the rest and fuel you've been refusing it.",hi:"<b>शारीरिक इनपुट — श्वास, प्रकाश, जल, पोषण</b> — और तनाव-चिकित्सा ख़ालीपन से लौटने का सबसे तेज़ रास्ता हैं। ये आपके शरीर को वह आराम और ईंधन देते हैं जो आप उसे नहीं दे रहे थे।"},
+  calm:{en:"The <b>breath practices and stress-release therapies (4-A, Sweet Memory)</b> turn stillness from a rare accident into a skill you can call on — even in your evenings and your sleep.",hi:"<b>श्वास अभ्यास और तनाव-मुक्ति चिकित्सा (4-A, मधुर स्मृति)</b> ठहराव को एक दुर्लभ संयोग से एक ऐसे कौशल में बदलते हैं जिसे आप बुला सकें — शाम और नींद में भी।"},
+};
+
+// honest limits per wound (where eco-skills isn't enough)
+var LIMIT = {
+  critic:{en:"One honest note: if that inner voice is relentless and has stolen your sleep, appetite or hope, it may be depression — and that deserves a real professional, not only daily practice. Eco-skills can walk beside that help; it shouldn't replace it.",hi:"एक सच्ची बात: अगर वह भीतरी आवाज़ लगातार है और आपकी नींद, भूख या उम्मीद छीन चुकी है, तो यह अवसाद हो सकता है — और यह केवल दैनिक अभ्यास नहीं, एक असली विशेषज्ञ का हक़दार है। ईको-स्किल्स उस मदद के साथ चल सकता है; उसकी जगह नहीं।"},
+  escape:{en:"And honestly — if the escape has become something you can't stop (a substance, a compulsion), please treat that with real support. Eco-skills offers a healthier path, but it isn't a treatment for dependence.",hi:"और सच कहूँ — अगर यह पलायन कुछ ऐसा बन गया है जिसे आप रोक नहीं सकते (कोई पदार्थ, कोई मजबूरी), तो कृपया उसका असली सहायता से इलाज कराइए। ईको-स्किल्स एक स्वस्थ राह देता है, पर निर्भरता का इलाज नहीं।"},
+  lonely:{en:"And remember — Eco-skills can steady you, but it can't replace human connection. Reaching toward real people, and sometimes a counsellor, matters alongside any practice.",hi:"और याद रखिए — ईको-स्किल्स आपको स्थिर कर सकता है, पर मानवीय जुड़ाव की जगह नहीं ले सकता। असली लोगों की ओर बढ़ना, और कभी-कभी एक काउंसलर, किसी भी अभ्यास के साथ-साथ ज़रूरी है।"},
+  trapped:{en:"And where 'trapped' is about real external limits — money, circumstance — those need practical help too, not only inner work. Eco-skills clears your head so you can see the options; it can't create them for you.",hi:"और जहाँ 'फँसा होना' असली बाहरी सीमाओं — पैसा, परिस्थिति — के बारे में है, उन्हें व्यावहारिक मदद भी चाहिए, केवल भीतरी काम नहीं। ईको-स्किल्स आपका दिमाग़ साफ़ करता है ताकि आप विकल्प देख सकें; वह उन्हें बना नहीं सकता।"},
+};
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+var app=document.getElementById("app");
+function render(){
+  if(S.screen==="intro")return intro();
+  if(S.screen==="demo")return demo();
+  if(S.screen==="think")return think();
+  if(S.screen==="q")return question();
+  if(S.screen==="analysis")return analysis();
+}
+function langbar(){
+  return '<div class="lang"><button class="'+(L==="en"?"on":"")+'" onclick="setLang(\'en\')">EN</button>'+
+    '<button class="'+(L==="hi"?"on":"")+'" onclick="setLang(\'hi\')">हिंदी</button></div>';
+}
+window.setLang=function(l){L=l;document.body.classList.toggle("hi",l==="hi");render();};
+
+function intro(){
+  app.innerHTML='<div class="card intro q-enter">'+
+    '<div class="topbar"><div class="logo">🌿 '+t({en:"Eco-skills",hi:"ईको-स्किल्स"})+'</div>'+langbar()+'</div>'+
+    '<span class="seed">🌱</span>'+
+    '<h1 class="fd">'+t({en:"A Conversation<br/>With Yourself",hi:"स्वयं से<br/>एक बातचीत"})+'</h1>'+
+    '<div class="tag">'+t({en:"not a quiz — a quiet, honest talk",hi:"कोई क्विज़ नहीं — एक शांत, सच्ची बात"})+'</div>'+
+    '<p>'+t({en:"I'll ask you a few things, and each answer shapes what I ask next — like a real conversation. There are no scores to win. At the end, I'll tell you, gently and honestly, what I think you're really carrying.",hi:"मैं आपसे कुछ बातें पूछूँगा, और हर उत्तर तय करेगा कि मैं आगे क्या पूछूँ — एक असली बातचीत की तरह। यहाँ जीतने के लिए कोई अंक नहीं। अंत में, मैं नरमी और सच्चाई से बताऊँगा कि मेरे ख़याल से आप असल में क्या ढो रहे हैं।"})+'</p>'+
+    '<button class="btn btn-p" onclick="begin()">'+t({en:"Let's talk →",hi:"चलिए बात करें →"})+'</button>'+
+    '<div class="meta">'+t({en:"5–7 minutes · completely private · nothing leaves this page",hi:"5–7 मिनट · पूरी तरह निजी · कुछ भी इस पेज से बाहर नहीं जाता"})+'</div>'+
+  '</div>';
+}
+window.begin=function(){S.screen="demo";S.demoStep=0;render();};
+
+function demo(){
+  var steps=[
+    {f:"name",q:{en:"First — what should I call you?",hi:"पहले — मैं आपको क्या कहकर बुलाऊँ?"},type:"text",ph:{en:"Your name",hi:"आपका नाम"}},
+    {f:"age",q:{en:"And how old are you, {name}?",hi:"और आपकी उम्र क्या है, {name}?"},type:"num",ph:{en:"Your age",hi:"आपकी उम्र"}},
+    {f:"gender",q:{en:"How do you identify?",hi:"आप स्वयं को कैसे पहचानते हैं?"},type:"mcq",opts:[{en:"Male",hi:"पुरुष"},{en:"Female",hi:"महिला"},{en:"Other",hi:"अन्य"},{en:"Prefer not to say",hi:"नहीं बताना चाहूँगा/चाहूँगी"}]},
+  ];
+  var st=steps[S.demoStep];
+  var inner='<div class="topbar"><div class="logo">🌿 '+t({en:"Eco-skills",hi:"ईको-स्किल्स"})+'</div>'+langbar()+'</div>'+
+    '<div class="speaker">'+t({en:"Getting to know you",hi:"आपको जानना"})+'</div>'+
+    '<div class="qtext">'+fill(t(st.q))+'</div>';
+  if(st.type==="mcq"){
+    inner+='<div class="opts">';
+    st.opts.forEach(function(o,i){inner+='<div class="opt '+(S._d===i?"sel":"")+'" onclick="dSel('+i+')"><span class="optl">'+String.fromCharCode(65+i)+'</span>'+t(o)+'</div>';});
+    inner+='</div><button class="btn btn-p" onclick="dNext()" '+(S._d!=null?"":"disabled")+'>'+t({en:"Continue →",hi:"आगे →"})+'</button>';
+  }else{
+    var v=S[st.f]||"";
+    inner+='<input class="tin" type="'+(st.type==="num"?"number":"text")+'" placeholder="'+t(st.ph)+'" value="'+v+'" oninput="dIn(this.value)" onkeydown="if(event.key===\'Enter\')dNext()"/>'+
+      '<button class="btn btn-p" onclick="dNext()" '+(v.toString().trim()?"":"disabled")+'>'+t({en:"Continue →",hi:"आगे →"})+'</button>';
+  }
+  app.innerHTML='<div class="card q-enter">'+inner+'</div>';
+  var ip=app.querySelector('.tin');if(ip)setTimeout(function(){ip.focus();},80);
+}
+window.dIn=function(v){var f=["name","age","gender"][S.demoStep];S[f]=v;var b=app.querySelector('.btn-p');if(b)b.disabled=!v.toString().trim();};
+window.dSel=function(i){S._d=i;render();};
+window.dNext=function(){
+  var f=["name","age","gender"][S.demoStep];
+  if(f==="name"&&!S.name.trim())return;
+  if(f==="age"){var a=parseInt(S.age);if(isNaN(a)||a<5||a>120)return;}
+  if(f==="gender"){if(S._d==null)return;S.gender=["male","female","other","na"][S._d];}
+  S.demoStep++;S._d=null;
+  if(S.demoStep>=3){S.screen="q";S.node="start";S.sel=null;S.custom="";S.customOn=false;S.qcount=0;}
+  render();
+};
+
+function question(){
+  var n=T[S.node];
+  if(!n){toThink();return;}
+  S.qcount++;
+  var dotsN=Math.min(S.qcount,14), dots="";
+  for(var i=0;i<dotsN+2;i++){dots+='<span class="dot '+(i<S.qcount-1?"done":i===S.qcount-1?"now":"")+'"></span>';}
+  var inner='<div class="topbar"><div class="logo">🌿 '+t({en:"Eco-skills",hi:"ईको-स्किल्स"})+'</div>'+langbar()+'</div>'+
+    '<div class="dots">'+dots+'</div>';
+  if(n.speaker)inner+='<div class="speaker">'+t(n.speaker)+'</div>';
+  inner+='<div class="qtext">'+fill(t(n.q))+'</div>';
+  if(n.sub)inner+='<div class="qsub">'+fill(t(n.sub))+'</div>';else inner+='<div class="qgap"></div>';
+  inner+='<div class="opts">';
+  (n.opts||[]).forEach(function(o,i){
+    inner+='<div class="opt '+((!S.customOn&&S.sel===i)?"sel":"")+'" onclick="oSel('+i+')"><span class="optl">'+String.fromCharCode(65+i)+'</span>'+fill(t(o.t))+'</div>';
+  });
+  inner+='</div>';
+  if(n.custom){
+    inner+='<div class="cwrap '+(S.customOn?"on":"")+'" onclick="cOn()">'+
+      '<span class="optl" style="'+(S.customOn?"background:var(--moss);color:#fff;border-color:var(--moss)":"")+'">✎</span>'+
+      '<input class="cin" type="text" placeholder="'+t(n.custom.placeholder)+'" value="'+S.custom+'" oninput="cType(this.value)" onfocus="cOn()"/></div>';
+  }
+  var ok=S.sel!==null||(S.customOn&&S.custom.trim());
+  inner+='<div style="margin-top:18px"><button class="btn btn-p" onclick="advance()" '+(ok?"":"disabled")+'>'+t({en:"Continue →",hi:"आगे →"})+'</button></div>';
+  app.innerHTML='<div class="card q-enter">'+inner+'</div>';
+}
+window.oSel=function(i){S.sel=i;S.customOn=false;render();};
+window.cOn=function(){if(!S.customOn){S.customOn=true;S.sel=null;render();setTimeout(function(){var e=app.querySelector('.cin');if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length);}},60);}};
+window.cType=function(v){S.custom=v;S.customOn=true;S.sel=null;var b=app.querySelector('.btn-p');if(b)b.disabled=!v.trim();};
+window.advance=function(){
+  var n=T[S.node], nextId;
+  if(S.customOn&&n.custom){
+    if(n.custom.set)S.vars[n.custom.set]=S.custom.trim();
+    S.traits.aware=clamp(S.traits.aware+2);
+    nextId=n.custom.next;
+  } else if(S.sel!==null){
+    var o=n.opts[S.sel];
+    if(o.set)for(var k in o.set)S.vars[k]=o.set[k];
+    applyTr(o.tr); if(o.w)wound(o.w,2);
+    nextId=o.next;
+  }
+  if(typeof nextId==="function")nextId=nextId(S);
+  var card=app.querySelector('.card');if(card)card.classList.add('q-exit');
+  setTimeout(function(){
+    S.sel=null;S.custom="";S.customOn=false;
+    if(!nextId||nextId==="__end"){toThink();}
+    else{S.node=nextId;render();}
+  },250);
+};
+
+function toThink(){S.screen="think";render();setTimeout(function(){S.screen="analysis";render();},2000);}
+function think(){
+  app.innerHTML='<div class="card q-enter"><div class="think"><div class="ring"></div>'+
+    '<p>'+t({en:"Listening to everything you said…",hi:"आपने जो कहा, उस सब को सुन रहा हूँ…"})+'</p></div></div>';
+}
+
+function topWound(){
+  var best=null,bv=-1;
+  for(var k in S.wounds){if(S.wounds[k]>bv){bv=S.wounds[k];best=k;}}
+  return best||"lost_self";
+}
+
+function analysis(){
+  var name=cap(S.name||t({en:"friend",hi:"मित्र"}));
+  var wk=topWound(), W=WOUNDS[wk]||WOUNDS.lost_self;
+  var ecoKey=W.eco, eco=ECO[ecoKey];
+  var limit=LIMIT[wk];
+  // secondary wound
+  var second=null,sv=-1;
+  for(var k in S.wounds){if(k!==wk&&S.wounds[k]>sv){sv=S.wounds[k];second=k;}}
+
+  var dims=Object.keys(S.traits).map(function(key){
+    var nm={body:{en:"Body Awareness",hi:"शारीरिक जागरूकता"},calm:{en:"Inner Calm",hi:"भीतरी शांति"},
+      aware:{en:"Self-Knowledge",hi:"आत्म-ज्ञान"},focus:{en:"Focus & Direction",hi:"ध्यान व दिशा"},
+      social:{en:"Connection",hi:"जुड़ाव"},nature:{en:"Nature Bond",hi:"प्रकृति से नाता"},
+      regulate:{en:"Emotional Steadiness",hi:"भावनात्मक स्थिरता"},resilience:{en:"Resilience",hi:"दृढ़ता"}};
+    return {key:key,name:t(nm[key]),score:S.traits[key]};
+  }).sort(function(a,b){return a.score-b.score;});
+
+  function lab(s){return s>=72?t({en:"Strong",hi:"मज़बूत"}):s>=56?t({en:"Steady",hi:"स्थिर"}):s>=42?t({en:"Tender",hi:"कोमल"}):t({en:"Needs care",hi:"देखभाल चाहिए"});}
+  function col(s){return s>=72?"#5f7d4d":s>=56?"#7d9a6a":s>=42?"#b8943e":"#a8623e";}
+
+  var html='<div class="card an">'+
+    '<div class="topbar"><div class="logo">🌿 '+t({en:"Eco-skills",hi:"ईको-स्किल्स"})+'</div>'+langbar()+'</div>'+
+    '<div class="crown">'+t({en:"What I heard",hi:"मैंने जो सुना"})+'</div>'+
+    '<h2 class="fd">'+t({en:"Here's what I think you're really carrying, ",hi:"मेरे ख़याल से आप असल में यह ढो रहे हैं, "})+name+'.</h2>'+
+    '<div class="lead">'+t({en:"You answered honestly — so let me be honest back. Underneath the surface of what you told me, one thread ran deeper than the rest.",hi:"आपने सच्चाई से उत्तर दिए — तो मैं भी सच कहता हूँ। आपने जो बताया उसकी सतह के नीचे, एक धागा बाक़ियों से गहरा चला।"})+'</div>';
+
+  // THE WOUND
+  html+='<div class="wound"><div class="wt">'+t(W.title)+'</div><p>'+t(W.body)+'</p>';
+  if(second&&WOUNDS[second]){html+='<p style="opacity:.9"><b>'+t({en:"And beneath that: ",hi:"और उसके नीचे: "})+'</b>'+t(WOUNDS[second].title).toLowerCase()+'</p>';}
+  html+='</div>';
+
+  // HOW ECO-SKILLS MEETS IT
+  html+='<div class="sect">'+t({en:"How Eco-skills meets this",hi:"ईको-स्किल्स इसे कैसे संभालता है"})+'</div>';
+  html+='<div class="card-i"><p>'+t(eco)+'</p></div>';
+
+  // HONEST LIMIT
+  if(limit){html+='<div class="card-i" style="background:linear-gradient(135deg,rgba(168,98,62,.1),rgba(184,148,62,.05));border-color:rgba(168,98,62,.2)"><div class="it" style="color:var(--rust)">'+t({en:"An honest word",hi:"एक सच्ची बात"})+'</div><p>'+t(limit)+'</p></div>';}
+
+  // DIMENSIONS
+  html+='<div class="sect">'+t({en:"The threads beneath your answers",hi:"आपके उत्तरों के नीचे के धागे"})+'</div>';
+  dims.forEach(function(d){
+    html+='<div style="margin-bottom:15px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">'+
+      '<span class="dn" style="font-family:var(--fd);font-size:17px;font-weight:600">'+d.name+'</span>'+
+      '<span style="font-size:12px;font-weight:600;color:'+col(d.score)+'">'+lab(d.score)+'</span></div>'+
+      '<div style="height:8px;background:rgba(42,32,20,.07);border-radius:99px;overflow:hidden"><div class="dfill" data-w="'+d.score+'" style="height:100%;width:0;border-radius:99px;background:'+col(d.score)+';transition:width 1.2s cubic-bezier(.22,1,.36,1)"></div></div></div>';
+  });
+
+  // CTA
+  html+='<div class="cta"><p>'+t({en:"This was only the mirror. Eco-skills is how you change what it shows.",hi:"यह केवल आईना था। ईको-स्किल्स वह है जिससे आप इसका प्रतिबिंब बदलते हैं।"})+'</p>'+
+    '<a class="btn btn-p" href="index.html#start">'+t({en:"Begin my free 7-day reset →",hi:"मेरा नि:शुल्क 7-दिन रीसेट शुरू करें →"})+'</a>'+
+    '<div style="margin-top:12px"><button class="btn btn-g" onclick="again()">'+t({en:"Start over",hi:"फिर से शुरू करें"})+'</button></div></div>';
+
+  html+='</div>';
+  app.innerHTML=html;
+  setTimeout(function(){document.querySelectorAll('.dfill').forEach(function(el){el.style.width=el.dataset.w+"%";});},120);
+}
+function cap(s){return s?s.charAt(0).toUpperCase()+s.slice(1):s;}
+window.again=function(){var l=L;S=fresh();L=l;render();};
+
+render();
+})();
+</script>
+</body>
+</html>
